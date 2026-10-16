@@ -83,6 +83,7 @@ module.exports = class SelectionAIButton extends Plugin {
         return;
       }
       const selectedText = view.editor.getSelection();
+      this.cancelPendingFills();
       this.hide(state);
       const command = "copilot:trigger-quick-ask";
       if (!this.app.commands.commands[command]) {
@@ -98,9 +99,12 @@ module.exports = class SelectionAIButton extends Plugin {
     });
     this.registerDomEvent(doc, "pointerdown", (event) => {
       if (button.contains(event.target)) return;
+      // Capture before the editor changes selection. Close immediately without
+      // returning focus to the old editor, so a new selection can start normally.
+      if (!this.isQuestionInteraction(event.target)) this.closeQuestion(win);
       state.dragging = true;
       this.hide(state);
-    });
+    }, true);
     this.registerDomEvent(doc, "pointerup", () => {
       state.dragging = false;
       schedule();
@@ -126,7 +130,29 @@ module.exports = class SelectionAIButton extends Plugin {
     this.registerDomEvent(win, "resize", () => this.hide(state));
   }
 
+  isQuestionInteraction(target) {
+    // Model menus use portals outside the question overlay. Keep them usable.
+    return !!target?.closest?.(
+      '.copilot-quick-ask-overlay, [data-radix-popper-content-wrapper], .menu, [role="menu"], [role="listbox"]',
+    );
+  }
+
+  cancelPendingFills() {
+    for (const cancel of this.pendingFills) cancel();
+  }
+
+  closeQuestion(win) {
+    const controller = this.app.plugins.getPlugin("copilot")?.quickAskController;
+    const activeDocument = controller?.quickAskWidgetState?.view?.dom?.ownerDocument;
+    if (activeDocument && activeDocument !== win.document) return;
+    this.cancelPendingFills();
+    // Copilot's close(false) also clears its selection highlights and state.
+    // Removing the overlay DOM alone would leave the controller out of sync.
+    controller?.close?.(false);
+  }
+
   fillQuestion(win, text) {
+    this.cancelPendingFills();
     if (!text.trim()) return;
     // Only fill the newly opened Copilot input. Never paste into the note or
     // overwrite a question that the user has already started typing.

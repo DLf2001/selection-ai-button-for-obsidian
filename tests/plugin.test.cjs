@@ -129,6 +129,53 @@ test('cancelled auto fill performs no insertion', () => {
   assert.equal(edits.length, 0);
 });
 
+test('a new selection cancels old prefill and inserts only the new text', () => {
+  const {plugin} = createPlugin();
+  const {win, queue, edits} = fillWindow();
+  plugin.fillQuestion(win, 'old selection');
+  plugin.fillQuestion(win, 'new selection');
+  while (queue.length) queue.shift()();
+  assert.deepEqual(edits, [['insertText', false, 'new selection']]);
+  assert.equal(plugin.pendingFills.size, 0);
+});
+
+test('outside close uses controller cleanup without stealing editor focus', () => {
+  const {plugin} = createPlugin();
+  const {win, queue, edits} = fillWindow();
+  const calls = [];
+  plugin.app = {plugins: {getPlugin: () => ({quickAskController: {
+    quickAskWidgetState: {view: {dom: {ownerDocument: win.document}}},
+    close: animate => calls.push(animate),
+  }})}};
+  plugin.fillQuestion(win, 'old selection');
+  plugin.closeQuestion(win);
+  while (queue.length) queue.shift()();
+  assert.deepEqual(calls, [false]);
+  assert.equal(edits.length, 0);
+});
+
+test('interactions inside question and model menus are not outside clicks', () => {
+  const {plugin} = createPlugin();
+  assert.equal(plugin.isQuestionInteraction({closest: selector => {
+    assert.ok(selector.includes('.copilot-quick-ask-overlay'));
+    assert.ok(selector.includes('data-radix-popper-content-wrapper'));
+    return {};
+  }}), true);
+  assert.equal(plugin.isQuestionInteraction({closest: () => null}), false);
+  assert.equal(plugin.isQuestionInteraction(null), false);
+});
+
+test('outside click does not close a question in a different window', () => {
+  const {plugin} = createPlugin();
+  let closed = false;
+  plugin.app = {plugins: {getPlugin: () => ({quickAskController: {
+    quickAskWidgetState: {view: {dom: {ownerDocument: {}}}},
+    close: () => {closed=true;},
+  }})}};
+  plugin.closeQuestion({document: {}});
+  assert.equal(closed, false);
+});
+
 test('manifest and package versions match', () => {
   const root = path.join(__dirname, '..');
   const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8'));
