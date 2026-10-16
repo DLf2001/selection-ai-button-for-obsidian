@@ -1,0 +1,10 @@
+{
+  "id": "selection-ai-button",
+  "name": "Selection AI Button for Obsidian",
+  "version": "1.1.0",
+  "minAppVersion": "1.11.4",
+  "description": "选中文字后显示询问 AI 按钮，点击打开 Copilot Quick Ask。",
+  "author": "DLf2001",
+  "authorUrl": "https://github.com/DLf2001",
+  "isDesktopOnly": true
+}
