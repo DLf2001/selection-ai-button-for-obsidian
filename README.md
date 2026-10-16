@@ -1,4 +1,8 @@
-# Selection AI Button for Obsidian
+# Selection AI Button
+
+[中文介绍](#中文介绍) · [English](#english)
+
+## 中文介绍
 
 在 Obsidian 笔记中选中文字，点击浮动的「询问 AI」按钮，即可打开 Copilot Quick Ask。支持在设置中选择是否将选中文字自动填入提问框。
 
@@ -32,7 +36,7 @@
 1. 下载本仓库的 `main.js`、`manifest.json`、`styles.css`，或从 Releases 下载对应附件。
 2. 在知识库中新建 `.obsidian/plugins/selection-ai-button/`。
 3. 将这三个文件放入该文件夹。
-4. 重启 Obsidian，在「设置 → 第三方插件」启用 **Selection AI Button for Obsidian**。
+4. 重启 Obsidian，在「设置 → 第三方插件」启用 **Selection AI Button**。
 
 目录结构：
 
@@ -44,7 +48,7 @@
    └─ styles.css
 ```
 
-项目名含 `for Obsidian`，内部插件 ID 仍为 `selection-ai-button`，用于兼容已有安装。
+插件显示名称为 `Selection AI Button`，GitHub 仓库名保留 `selection-ai-button-for-obsidian`。内部插件 ID 仍为 `selection-ai-button`，已有安装可以直接更新，无需重新创建项目或迁移设置。
 
 ## 使用
 
@@ -59,7 +63,7 @@
 
 ## 设置
 
-进入「设置 → Selection AI Button for Obsidian」。
+进入「设置 → Selection AI Button」。
 
 | 选项 | 关闭（默认） | 开启 |
 | --- | --- | --- |
@@ -93,3 +97,98 @@ npm test
 ## 许可证
 
 作者暂未为本项目添加许可证。
+
+---
+
+## English
+
+Select text in an Obsidian note and click the floating **询问 AI** (Ask AI) button to open Copilot Quick Ask. An optional setting lets you prefill the question box with the selected text.
+
+Maintained by [DLf2001](https://github.com/DLf2001). This is an independent third-party plugin, not affiliated with Obsidian or Copilot.
+
+### Features
+
+- Shows an Ask AI button near selected text in **Live Preview**.
+- Opens Copilot Quick Ask without using the context menu.
+- Optional selection prefill, disabled by default.
+- Prefills the selected text as-is, without adding a translation instruction or sending a message.
+- Does not change the system clipboard or overwrite a question you have already typed.
+- Closes the question popup when you click outside it, while keeping model dropdown menus usable.
+- Uses the latest selection when you select different text and reopen Quick Ask.
+- Cancels pending prefill tasks when a popup is closed or a new question is opened.
+- Hides the button when the selection is cleared, notes are switched, or you type, scroll, or press Esc.
+- Uses your Obsidian theme and positions the button within the visible editor area where possible.
+
+### Requirements
+
+- Obsidian Desktop 1.11.4 or later.
+- **Copilot**, by **Logan Yang**, installed and enabled.
+- An enabled Quick Chat model and a configured default Quick Ask model in Copilot.
+- The integration targets Copilot **4.0.15** and depends on its `copilot:trigger-quick-ask` command, popup controller, and input structure. Other versions require verification.
+
+Mobile, Reading view, Source mode, and PDF selections are currently unsupported. Copilot is not bundled. This plugin does not modify Copilot files or provide a model service. The plugin interface currently uses Chinese labels.
+
+### Installation
+
+The plugin is not yet listed in the Obsidian Community Plugins directory. Install it manually:
+
+1. Download `main.js`, `manifest.json`, and `styles.css` from this repository or a GitHub release.
+2. Create `.obsidian/plugins/selection-ai-button/` in your vault.
+3. Put the three files in that directory.
+4. Restart Obsidian and enable **Selection AI Button** under **Settings → Community plugins**.
+
+```text
+your-vault/
+└─ .obsidian/plugins/selection-ai-button/
+   ├─ main.js
+   ├─ manifest.json
+   └─ styles.css
+```
+
+The display name is `Selection AI Button`. The GitHub repository remains `selection-ai-button-for-obsidian`, and the plugin ID remains `selection-ai-button`. Existing installations can be updated in place without migrating settings.
+
+### Usage
+
+1. Open a Markdown note in Live Preview and select non-whitespace text.
+2. Click **询问 AI** (Ask AI) near the selection.
+3. Enter or edit your question in Quick Ask, then send it manually.
+4. Use Copilot's copy, insert, or replace actions on the response.
+
+Click outside the question popup to dismiss it. Select different text and click Ask AI again to open a question for the new selection. With selection prefill enabled, the new text is placed in the question box.
+
+### Settings
+
+Open **Settings → Selection AI Button**.
+
+| Setting | Off (default) | On |
+| --- | --- | --- |
+| 自动填入选中文字 (Prefill selected text) | Leaves the question box blank; Copilot handles the selection as context. | Inserts the selected text into an empty question box for you to edit and send. |
+
+Prefill does not use the system clipboard. If the input is incompatible, the plugin displays a notice so you can type your question manually.
+
+### Data and network use
+
+This plugin makes no network requests, reads no API keys, does not index your vault, and collects no telemetry. Selection handling, button display, and prefill happen locally. When you send a request in Copilot, Copilot sends context to the model provider according to its configuration.
+
+### Troubleshooting
+
+- **No button:** Confirm both plugins are enabled, use Live Preview, and select non-whitespace text.
+- **No models:** Add a provider in Copilot, enable a Quick Chat model, and select a default Quick Ask model.
+- **Prefill does not work:** Check the setting. Existing questions are never overwritten. A Copilot update may change its input structure.
+- **Updated files have no effect:** Disable and re-enable this plugin, or restart Obsidian.
+
+### Development
+
+The source uses CommonJS directly, with no build step or runtime npm dependencies. Obsidian provides the `obsidian` module.
+
+```sh
+npm test
+```
+
+Automated checks cover syntax, settings persistence, selection positioning, editor modes, prefill behavior, cancellation, popup dismissal, and protecting existing questions. Full interaction still requires verification in Obsidian Desktop.
+
+When opening an issue, include your Obsidian version, Copilot version, editor mode, and reproduction steps. Do not include API keys or private notes.
+
+### License
+
+The author has not added a license to this project.
