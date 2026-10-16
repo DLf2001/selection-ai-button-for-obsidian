@@ -32,9 +32,18 @@
 
 ## 安装
 
-此项目尚未进入 Obsidian 社区插件列表，请先手动安装。
+### 方式一：从 Obsidian 社区安装（推荐）
 
-1. 下载本仓库的 `main.js`、`manifest.json`、`styles.css`，或从 Releases 下载对应附件。
+1. 打开 Obsidian，进入「设置 → 第三方插件」，如尚未启用社区插件，请先按提示启用。
+2. 点击「浏览」，搜索 **Selection AI Button**。
+3. 打开插件详情，点击「安装」，然后点击「启用」。
+4. 确认已安装并启用 **Copilot**（作者 **Logan Yang**），并按上方环境要求配置 Quick Ask 模型。
+
+也可打开 [社区插件页面](https://community.obsidian.md/plugins/selection-ai-button)，点击 **Add to Obsidian**，在 Obsidian 中完成安装和启用。
+
+### 方式二：手动安装
+
+1. 从 [GitHub Releases](https://github.com/DLf2001/selection-ai-button-for-obsidian/releases/latest) 下载同一版本的 `main.js`、`manifest.json`、`styles.css` 三个附件。
 2. 在知识库中新建 `.obsidian/plugins/selection-ai-button/`。
 3. 将这三个文件放入该文件夹。
 4. 重启 Obsidian，在「设置 → 第三方插件」启用 **Selection AI Button**。
@@ -140,9 +149,18 @@ Mobile, Reading view, Source mode, and PDF selections are currently unsupported.
 
 ### Installation
 
-The plugin is not yet listed in the Obsidian Community Plugins directory. Install it manually:
+#### Option 1: Install from Obsidian Community plugins (recommended)
 
-1. Download `main.js`, `manifest.json`, and `styles.css` from this repository or a GitHub release.
+1. Open Obsidian and go to **Settings → Community plugins**. If community plugins are not enabled, follow the prompts to enable them first.
+2. Select **Browse** and search for **Selection AI Button**.
+3. Open the plugin details, select **Install**, then **Enable**.
+4. Make sure **Copilot**, by **Logan Yang**, is installed and enabled, and configure a Quick Ask model as described in Requirements above.
+
+Alternatively, open the [community plugin page](https://community.obsidian.md/plugins/selection-ai-button), select **Add to Obsidian**, and finish installing and enabling the plugin in Obsidian.
+
+#### Option 2: Manual installation
+
+1. Download the `main.js`, `manifest.json`, and `styles.css` assets from the same release on [GitHub Releases](https://github.com/DLf2001/selection-ai-button-for-obsidian/releases/latest).
 2. Create `.obsidian/plugins/selection-ai-button/` in your vault.
 3. Put the three files in that directory.
 4. Restart Obsidian and enable **Selection AI Button** under **Settings → Community plugins**.
