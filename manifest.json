@@ -1,9 +1,9 @@
 {
   "id": "selection-ai-button",
   "name": "Selection AI Button",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "minAppVersion": "1.11.4",
-  "description": "选中文字后显示询问 AI 按钮，点击打开 Copilot Quick Ask。",
+  "description": "Open Copilot Quick Ask from a floating selection button, with optional selected-text prefill.",
   "author": "DLf2001",
   "authorUrl": "https://github.com/DLf2001",
   "isDesktopOnly": true

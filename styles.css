@@ -1,5 +1,7 @@
 .selection-ai-button {
   position: fixed;
+  left: var(--selection-ai-x, 0px);
+  top: var(--selection-ai-y, 0px);
   z-index: 50;
   display: inline-flex;
   align-items: center;

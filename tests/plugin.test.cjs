@@ -6,9 +6,10 @@ const vm = require('node:vm');
 
 function createPlugin() {
   const toggles = [];
+  const dropdowns = [];
   class Setting {
-    setName() { return this; }
-    setDesc() { return this; }
+    setName(value) { this.name = value; return this; }
+    setDesc(value) { this.desc = value; return this; }
     addToggle(callback) {
       const toggle = {
         setValue(value) { this.value = value; return this; },
@@ -18,12 +19,34 @@ function createPlugin() {
       callback(toggle);
       return this;
     }
+    addDropdown(callback) {
+      const dropdown = {
+        options: {},
+        addOption(key, value) { this.options[key] = value; return this; },
+        setValue() { return this; },
+        onChange(callback) { this.change = callback; return this; },
+      };
+      dropdowns.push(dropdown);
+      callback(dropdown);
+      return this;
+    }
+  }
+  class Component {
+    registerDomEvent() {}
+    unload() { this.unloaded = true; }
+  }
+  class Plugin extends Component {
+    addChild(component) {
+      component.registerDomEvent = (...args) => this.registerDomEvent(...args);
+      return component;
+    }
+    removeChild(component) { component.unload(); }
   }
   const sandbox = {
     module: {exports: {}},
     window: {},
     require: () => ({
-      Plugin: class {},
+      Plugin, Component,
       PluginSettingTab: class {
         constructor() { this.containerEl = {empty() {}}; }
       },
@@ -33,8 +56,115 @@ function createPlugin() {
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '..', 'main.js'), 'utf8'), sandbox);
   const plugin = new sandbox.module.exports();
   plugin.pendingFills = new Set();
-  return {plugin, toggles};
+  return {plugin, toggles, dropdowns, Component, Setting};
 }
+
+function prepareOnload(plugin, settings) {
+  let tab;
+  plugin.loadData = async () => settings;
+  plugin.saveData = async () => {};
+  plugin.addSettingTab = value => {tab = value;};
+  plugin.attachWindow = () => {};
+  plugin.registerEvent = () => {};
+  plugin.register = () => {};
+  plugin.app = {workspace: {on() {return {};}}};
+  return {get tab() {return tab;}};
+}
+
+test('existing prefill settings survive upgrade and default to Chinese', async () => {
+  const {plugin} = createPlugin();
+  prepareOnload(plugin, {autoFillSelection:true});
+  await plugin.onload();
+  assert.equal(plugin.settings.autoFillSelection, true);
+  assert.equal(plugin.settings.language, 'zh');
+  assert.equal(plugin.t('button'), '询问 AI');
+});
+
+test('unsupported language and malformed toggle recover to safe defaults', async () => {
+  const {plugin} = createPlugin();
+  prepareOnload(plugin, {language:'unknown', autoFillSelection:'false'});
+  await plugin.onload();
+  assert.equal(plugin.settings.language, 'zh');
+  assert.equal(plugin.settings.autoFillSelection, false);
+});
+
+test('switching language immediately updates all windows and preserves prefill', async () => {
+  const {plugin} = createPlugin();
+  plugin.settings = {language:'zh', autoFillSelection:true};
+  let saved;
+  plugin.saveData = async settings => {saved = {...settings};};
+  const makeState = () => ({button:{setAttribute(key,value) {this[key]=value;}},label:{}});
+  const first = makeState(), second = makeState();
+  plugin.windows = new Map([[{},first],[{},second]]);
+  await plugin.setLanguage('en');
+  for (const state of [first,second]) {
+    assert.equal(state.label.textContent, 'Ask AI');
+    assert.equal(state.button['aria-label'], 'Ask AI about selected text');
+  }
+  assert.equal(saved.language, 'en');
+  assert.equal(saved.autoFillSelection, true);
+  await plugin.setLanguage('zh');
+  assert.equal(first.label.textContent, '询问 AI');
+  assert.equal(saved.language, 'zh');
+});
+
+test('declarative settings support search and language switching on newer apps', async () => {
+  const {plugin} = createPlugin();
+  const state = prepareOnload(plugin, {language:'zh',autoFillSelection:true});
+  await plugin.onload();
+  const tab = state.tab;
+  assert.equal(typeof tab.getSettingDefinitions()[0].render, 'function');
+  let updated = 0;
+  tab.update = () => {updated++;};
+  await tab.setControlValue('language', 'en');
+  assert.equal(tab.getSettingDefinitions()[0].name, 'Interface language');
+  assert.equal(tab.getSettingDefinitions()[1].name, 'Prefill selected text');
+  assert.equal(updated, 1);
+  assert.equal(plugin.settings.autoFillSelection, true);
+  await tab.setControlValue('autoFillSelection', false);
+  assert.equal(plugin.settings.autoFillSelection, false);
+});
+
+test('language dropdown also refreshes the focused settings row', async () => {
+  const {plugin, dropdowns, Setting} = createPlugin();
+  const state = prepareOnload(plugin, {language:'zh',autoFillSelection:true});
+  await plugin.onload();
+  const tab = state.tab;
+  let updated = 0;
+  tab.update = () => {updated++;};
+  const row = new Setting();
+  tab.getSettingDefinitions()[0].render(row);
+  assert.equal(dropdowns[0].options.en, 'English');
+  await dropdowns[0].change('en');
+  assert.equal(row.name, 'Interface language');
+  assert.equal(updated, 1);
+  assert.equal(plugin.settings.autoFillSelection, true);
+});
+
+test('detaching a window unloads its component and cancels only its pending fill', () => {
+  const {plugin, Component} = createPlugin();
+  const first = {clearTimeout() {}}, second = {};
+  let cancelledFirst = 0, cancelledSecond = 0, removed = 0;
+  const cancelFirst = () => {cancelledFirst++;plugin.pendingFills.delete(cancelFirst);};
+  const cancelSecond = () => {cancelledSecond++;plugin.pendingFills.delete(cancelSecond);};
+  cancelFirst.ownerWindow = first;
+  cancelSecond.ownerWindow = second;
+  plugin.pendingFills.add(cancelFirst);
+  plugin.pendingFills.add(cancelSecond);
+  const component = new Component();
+  const state = {component,button:{remove() {removed++;}},view:{},timer:1};
+  plugin.windows = new Map([[first,state],[second,{}]]);
+  plugin.detachWindow(first);
+  assert.equal(component.unloaded, true);
+  assert.equal(cancelledFirst, 1);
+  assert.equal(cancelledSecond, 0);
+  assert.equal(removed, 1);
+  assert.equal(state.view, null);
+  assert.equal(plugin.windows.has(first), false);
+  assert.equal(plugin.windows.has(second), true);
+  plugin.detachWindow(first);
+  assert.equal(removed, 1);
+});
 
 test('setting defaults to off and persists toggle changes', async () => {
   const {plugin, toggles} = createPlugin();
@@ -72,14 +202,15 @@ test('live preview selection shows a bounded button without invoking AI', () => 
     workspace: {getActiveViewOfType: () => view}, plugins: {getPlugin: () => ({})},
     commands: {executeCommandById: () => { throw Error('Must not invoke AI'); }},
   };
+  const style = {setProperty(key, value) {this[key] = value;}};
   const state = {
     win: {document: doc, innerWidth: 1000, innerHeight: 800},
-    button: {hidden:true,offsetWidth:100,offsetHeight:32,style:{}}, dragging:false,
+    button: {hidden:true,offsetWidth:100,offsetHeight:32,style}, dragging:false,
   };
   plugin.update(state);
   assert.equal(state.button.hidden, false);
-  assert.equal(state.button.style.left, '692px');
-  assert.ok(parseFloat(state.button.style.top) + 32 <= 612);
+  assert.equal(state.button.style['--selection-ai-x'], '692px');
+  assert.ok(parseFloat(state.button.style['--selection-ai-y']) + 32 <= 612);
   for (const change of [() => {raw=true;}, () => {raw=false;mode='preview';}, () => {mode='source';text=' ';}]) {
     change(); plugin.update(state); assert.equal(state.button.hidden, true);
   }
@@ -216,6 +347,7 @@ test('button respects the auto-fill switch and invokes only Quick Ask', () => {
     };
     plugin.app = {
       workspace: {getActiveViewOfType: () => view},
+      plugins: {getPlugin: () => ({})},
       commands: {
         commands: {'copilot:trigger-quick-ask': {}},
         executeCommandById(id) { commands.push(id); return true; },

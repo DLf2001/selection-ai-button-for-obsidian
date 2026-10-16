@@ -13,6 +13,7 @@
 - 在**实时预览模式**中选中文字后显示「询问 AI」。
 - 点击按钮打开已有的 Copilot 划词问答，无需右键菜单。
 - 「自动填入选中文字」可开关，默认关闭。
+- 可在设置中选择简体中文或 English，按钮、设置项和提示消息立即切换。
 - 开启后只填入原选词句，不自动加翻译指令、不自动发送。
 - 不改动系统剪贴板，也不替换用户已经输入的问题。
 - 点击问答浮窗外部自动关闭；在原文重新划词、点击按钮后，可填入新的所选词句。
@@ -69,11 +70,15 @@
 | --- | --- | --- |
 | 自动填入选中文字 | 提问框保持空白，选中文字由 Copilot 作为上下文处理 | 将所选词句填入空白提问框，可继续编辑后发送 |
 
+「界面语言」可选择「简体中文」或「English」，默认简体中文。切换后立即生效，并保存到本插件的本地设置；不会改变 Copilot 自身的界面语言。更新插件不会重置已有的自动填入选项。
+
 这个选项不会调用系统复制或粘贴。若模型输入框不兼容，插件会提示手动输入。
 
 ## 数据与网络
 
 本插件自身不发起网络请求，不读取 API Key，不索引知识库，不收集遥测。选择文字、显示按钮和自动填入都在本地完成。只有你在 Copilot 中发送请求时，Copilot 才会按其配置将上下文发送给模型服务商。
+
+本插件免费。Copilot 或你选择的模型服务可能要求账号或按其方案收费，具体以各服务的要求为准。
 
 ## 排查问题
 
@@ -86,8 +91,12 @@
 
 源码直接使用 CommonJS，无构建步骤或运行时 npm 依赖。Obsidian 提供 `obsidian` 模块。
 
+开发检查需要 Node.js 22.13 或更新版本；GitHub CI 使用 Node.js 24。
+
 ```sh
+npm ci --ignore-scripts
 npm test
+npm run lint
 ```
 
 自动检查覆盖语法、配置保存、选区按钮位置、不同编辑模式的显示条件、自动填入开关及禁止覆盖已有提问。完整交互仍需在 Obsidian Desktop 中验证。
@@ -96,7 +105,7 @@ npm test
 
 ## 许可证
 
-作者暂未为本项目添加许可证。
+本项目采用 [MIT 许可证](LICENSE)，版权归 DLf2001 所有。
 
 ---
 
@@ -111,6 +120,7 @@ Maintained by [DLf2001](https://github.com/DLf2001). This is an independent thir
 - Shows an Ask AI button near selected text in **Live Preview**.
 - Opens Copilot Quick Ask without using the context menu.
 - Optional selection prefill, disabled by default.
+- Choose Simplified Chinese or English in settings; buttons, settings, and notices update immediately.
 - Prefills the selected text as-is, without adding a translation instruction or sending a message.
 - Does not change the system clipboard or overwrite a question you have already typed.
 - Closes the question popup when you click outside it, while keeping model dropdown menus usable.
@@ -126,7 +136,7 @@ Maintained by [DLf2001](https://github.com/DLf2001). This is an independent thir
 - An enabled Quick Chat model and a configured default Quick Ask model in Copilot.
 - The integration targets Copilot **4.0.15** and depends on its `copilot:trigger-quick-ask` command, popup controller, and input structure. Other versions require verification.
 
-Mobile, Reading view, Source mode, and PDF selections are currently unsupported. Copilot is not bundled. This plugin does not modify Copilot files or provide a model service. The plugin interface currently uses Chinese labels.
+Mobile, Reading view, Source mode, and PDF selections are currently unsupported. Copilot is not bundled. This plugin does not modify Copilot files or provide a model service. The interface supports Simplified Chinese and English.
 
 ### Installation
 
@@ -164,11 +174,15 @@ Open **Settings → Selection AI Button**.
 | --- | --- | --- |
 | 自动填入选中文字 (Prefill selected text) | Leaves the question box blank; Copilot handles the selection as context. | Inserts the selected text into an empty question box for you to edit and send. |
 
+**Interface language** offers **简体中文** and **English**, with Simplified Chinese as the default. Changes apply immediately and are saved locally. This setting does not change Copilot's own language. Updating the plugin preserves your existing prefill preference.
+
 Prefill does not use the system clipboard. If the input is incompatible, the plugin displays a notice so you can type your question manually.
 
 ### Data and network use
 
 This plugin makes no network requests, reads no API keys, does not index your vault, and collects no telemetry. Selection handling, button display, and prefill happen locally. When you send a request in Copilot, Copilot sends context to the model provider according to its configuration.
+
+This plugin is free. Copilot or your chosen model provider may require an account or charge for services according to their own plans.
 
 ### Troubleshooting
 
@@ -181,8 +195,12 @@ This plugin makes no network requests, reads no API keys, does not index your va
 
 The source uses CommonJS directly, with no build step or runtime npm dependencies. Obsidian provides the `obsidian` module.
 
+Development checks require Node.js 22.13 or later. GitHub CI uses Node.js 24.
+
 ```sh
+npm ci --ignore-scripts
 npm test
+npm run lint
 ```
 
 Automated checks cover syntax, settings persistence, selection positioning, editor modes, prefill behavior, cancellation, popup dismissal, and protecting existing questions. Full interaction still requires verification in Obsidian Desktop.
@@ -191,4 +209,4 @@ When opening an issue, include your Obsidian version, Copilot version, editor mo
 
 ### License
 
-The author has not added a license to this project.
+Licensed under the [MIT License](LICENSE). Copyright DLf2001.
