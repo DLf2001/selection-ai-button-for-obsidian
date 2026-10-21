@@ -1,7 +1,7 @@
 {
   "id": "selection-ai-button",
   "name": "Selection AI Button",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "minAppVersion": "1.11.4",
   "description": "Open Copilot Quick Ask from a floating selection button, with optional selected-text prefill.",
   "author": "DLf2001",

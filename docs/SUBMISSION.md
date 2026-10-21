@@ -7,7 +7,7 @@
 - Repository: https://github.com/DLf2001/selection-ai-button-for-obsidian
 - Author: DLf2001
 - License: MIT
-- Desktop only; Live Preview only.
+- Desktop only; Quick Ask runs in Live Preview. Reading view offers an explicit switch-to-Live-Preview shortcut, followed by a new selection.
 - Minimum app version: 1.11.4. Declarative settings are used on 1.13+ with an imperative fallback on older versions.
 - Description: Open Copilot Quick Ask from a floating selection button, with optional selected-text prefill.
 
@@ -39,7 +39,8 @@ Use a non-sensitive Markdown test note. No API message needs to be sent for thes
 - Turn prefill off and confirm the question box stays blank.
 - Open and close a popout window; repeat selection and confirm window cleanup.
 - Disable the plugin; confirm its buttons disappear and do not return on selection.
-- Confirm no button is shown in Reading view, Source mode, or a PDF.
+- Confirm Reading view shows a switch-to-Live-Preview button only for selections within the note body; clicking it changes mode without editing the note or sending a message.
+- Confirm no button is shown in Source mode or a PDF.
 
 Automated mocks cover the corresponding state transitions, but do not replace checking the real Copilot editor. Record actual UI results separately; do not report checklist items as passed solely because the mocks passed.
 

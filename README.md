@@ -11,6 +11,7 @@
 ## 功能
 
 - 在**实时预览模式**中选中文字后显示「询问 AI」。
+- 在**阅读模式**中选中文字后显示「切换到实时预览」；点击后重新选词即可询问 AI，不会在后台自动切换模式。
 - 点击按钮打开已有的 Copilot 划词问答，无需右键菜单。
 - 「自动填入选中文字」可开关，默认关闭。
 - 可在设置中选择简体中文或 English，按钮、设置项和提示消息立即切换。
@@ -18,6 +19,8 @@
 - 不改动系统剪贴板，也不替换用户已经输入的问题。
 - 点击问答浮窗外部自动关闭；在原文重新划词、点击按钮后，可填入新的所选词句。
 - 关闭或重新打开问答时取消旧的延迟填入，避免旧词句出现在新问题里。
+- 自动填入会等待输入框就绪并确认文字保留，空白或重新渲染时有限重试；失败时显示提示。
+- 手动输入、粘贴、输入法组合或关闭自动填入后立即停止旧任务，不覆盖已有问题。
 - 取消选择、切换笔记、输入、滚动或按 Esc 时隐藏按钮。
 - 使用 Obsidian 主题配色，按钮尽量保持在编辑区可见范围内。
 
@@ -28,7 +31,7 @@
 - 已在 Copilot 中启用快捷聊天模型，并配置 Quick Ask 默认模型。
 - 当前兼容实现以 Copilot **4.0.15** 为基准，依赖其命令 `copilot:trigger-quick-ask` 和输入框结构。其他版本需要实际验证。
 
-目前不支持手机、阅读模式、源码模式或 PDF 选词。本插件不包含 Copilot，不修改其文件，也不提供模型服务。
+阅读模式提供切换到实时预览的入口，不直接在阅读模式打开 Quick Ask；切换后需重新选择文字。目前不支持手机、源码模式或 PDF 选词。本插件不包含 Copilot，不修改其文件，也不提供模型服务。
 
 ## 安装
 
@@ -62,7 +65,7 @@
 
 ## 使用
 
-1. 切换到实时预览模式，选中非空白文字。
+1. 在实时预览模式选中非空白文字；如果处于阅读模式，可先选词并点击「切换到实时预览」，然后重新选词。
 2. 点击选区附近的「询问 AI」。
 3. 在 Quick Ask 中输入或修改问题，手动发送。
 4. 回复生成后，使用 Copilot 的复制、插入或替换功能。
@@ -91,9 +94,9 @@
 
 ## 排查问题
 
-- **没有按钮**：确认插件和 Copilot 都已启用，当前处于实时预览模式，且选择的不是纯空白文字。
+- **没有按钮**：确认插件和 Copilot 都已启用，当前处于实时预览或阅读模式，且选择的是笔记正文中的非空白文字。
 - **提示没有模型**：在 Copilot 中添加 API 服务商，并启用快捷聊天模型、选择默认 Quick Ask 模型。
-- **自动填入没有生效**：检查本插件开关；已输入的问题不会被覆盖；Copilot 升级可能改变输入框结构。
+- **自动填入没有生效**：检查本插件开关，等待输入框加载；插件最多等待 5 秒并有限重试。手动输入或点击提问区域会停止自动填入，已输入的问题不会被覆盖。若提示失败，可关闭问答重新选词再打开；Copilot 升级可能改变输入框结构。
 - **更新文件后没有变化**：关闭再启用本插件，或重启 Obsidian。
 
 ## 开发与验证
@@ -127,6 +130,7 @@ Maintained by [DLf2001](https://github.com/DLf2001). This is an independent thir
 ### Features
 
 - Shows an Ask AI button near selected text in **Live Preview**.
+- In **Reading view**, shows an explicit **Switch to Live Preview** button. After clicking it, select text again to ask AI; the plugin never switches modes in the background.
 - Opens Copilot Quick Ask without using the context menu.
 - Optional selection prefill, disabled by default.
 - Choose Simplified Chinese or English in settings; buttons, settings, and notices update immediately.
@@ -135,6 +139,8 @@ Maintained by [DLf2001](https://github.com/DLf2001). This is an independent thir
 - Closes the question popup when you click outside it, while keeping model dropdown menus usable.
 - Uses the latest selection when you select different text and reopen Quick Ask.
 - Cancels pending prefill tasks when a popup is closed or a new question is opened.
+- Waits for the input to be ready, verifies retained text, and retries blank or re-created inputs a limited number of times, with a failure notice when needed.
+- Stops pending prefill on manual input, paste, IME composition, or disabling prefill, without overwriting existing questions.
 - Hides the button when the selection is cleared, notes are switched, or you type, scroll, or press Esc.
 - Uses your Obsidian theme and positions the button within the visible editor area where possible.
 
@@ -145,7 +151,7 @@ Maintained by [DLf2001](https://github.com/DLf2001). This is an independent thir
 - An enabled Quick Chat model and a configured default Quick Ask model in Copilot.
 - The integration targets Copilot **4.0.15** and depends on its `copilot:trigger-quick-ask` command, popup controller, and input structure. Other versions require verification.
 
-Mobile, Reading view, Source mode, and PDF selections are currently unsupported. Copilot is not bundled. This plugin does not modify Copilot files or provide a model service. The interface supports Simplified Chinese and English.
+Reading view provides a shortcut to switch to Live Preview, not an in-place Quick Ask popup; select text again after switching. Mobile, Source mode, and PDF selections are currently unsupported. Copilot is not bundled. This plugin does not modify Copilot files or provide a model service. The interface supports Simplified Chinese and English.
 
 ### Installation
 
@@ -177,7 +183,7 @@ The display name is `Selection AI Button`. The GitHub repository remains `select
 
 ### Usage
 
-1. Open a Markdown note in Live Preview and select non-whitespace text.
+1. Select non-whitespace text in Live Preview. From Reading view, select text, click **Switch to Live Preview**, then select text again.
 2. Click **询问 AI** (Ask AI) near the selection.
 3. Enter or edit your question in Quick Ask, then send it manually.
 4. Use Copilot's copy, insert, or replace actions on the response.
@@ -204,9 +210,9 @@ This plugin is free. Copilot or your chosen model provider may require an accoun
 
 ### Troubleshooting
 
-- **No button:** Confirm both plugins are enabled, use Live Preview, and select non-whitespace text.
+- **No button:** Confirm both plugins are enabled and select non-whitespace text in the note body in Live Preview or Reading view.
 - **No models:** Add a provider in Copilot, enable a Quick Chat model, and select a default Quick Ask model.
-- **Prefill does not work:** Check the setting. Existing questions are never overwritten. A Copilot update may change its input structure.
+- **Prefill does not work:** Check the setting and allow the input to load. The plugin waits up to 5 seconds and retries a limited number of times. Manual input or clicking the question area stops prefill; existing questions are never overwritten. If a failure notice appears, close Quick Ask, select text, and reopen it. A Copilot update may change its input structure.
 - **Updated files have no effect:** Disable and re-enable this plugin, or restart Obsidian.
 
 ### Development
